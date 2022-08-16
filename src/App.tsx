@@ -1,19 +1,14 @@
 import React, {ChangeEvent, useCallback, useRef, useState} from 'react';
 import './App.css';
-import {useOpenCV} from './providers/OpenCVProvider';
+import cv from 'opencv-ts';
 
 function App() {
-  const {loaded, cv} = useOpenCV();
   const [loading, setLoading] = useState(false);
 
   const sourceCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const resultCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const convertMosaic = useCallback((srcCanvas: HTMLCanvasElement, dstCanvas: HTMLCanvasElement) => {
-    if (!cv) {
-      return;
-    }
-
     let src = cv.imread(srcCanvas);
     let dst = new cv.Mat();
 
@@ -26,17 +21,17 @@ function App() {
 
     src.delete();
     dst.delete();
-  }, [cv]);
+  }, []);
 
   const handleConvert = useCallback(() => {
-    if(!sourceCanvasRef.current || !resultCanvasRef.current || !loaded) {
+    if(!sourceCanvasRef.current || !resultCanvasRef.current) {
       return;
     }
 
     setLoading(true);
     convertMosaic(sourceCanvasRef.current, resultCanvasRef.current);
     setLoading(false);
-  }, [loaded, convertMosaic])
+  }, [convertMosaic])
 
 
   const handleImageUpload = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +59,7 @@ function App() {
     <div className="App">
       <canvas ref={sourceCanvasRef} id="canvasInput" />
       <input type="file" id="fileInput" name="file" accept="image/*" onChange={handleImageUpload} />
-      <button onClick={handleConvert} disabled={!loaded || loading}>변환</button>
+      <button onClick={handleConvert} disabled={loading}>변환</button>
       <canvas ref={resultCanvasRef} id="canvasOutput" />
     </div>
   );
